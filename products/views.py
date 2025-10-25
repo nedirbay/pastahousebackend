@@ -15,6 +15,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def latest(self, request):
+        """Return latest products. Query param: count (default 5)."""
+        try:
+            count = int(request.query_params.get('count', 5))
+        except (ValueError, TypeError):
+            count = 5
+        products = Product.objects.all().order_by('-created_at')[:max(0, count)]
+        serializer = self.get_serializer(products, many=True)
+        return Response({'count': len(serializer.data), 'products': serializer.data})
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
