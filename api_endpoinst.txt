@@ -1,0 +1,145 @@
+Base URL: http://localhost:8080
+
+--- Authentication Endpoints ---
+
+POST http://localhost:8080/api/auth/register
+Request: { "name": "string", "email": "string", "password": "string" }
+Response: { "user": {"id","name","email","createdAt"}, "token": "<jwt>" }
+
+POST http://localhost:8080/api/auth/login
+Request: { "email": "string", "password": "string" }
+Response: { "user": {"id","name","email"}, "token": "<jwt>" }
+
+POST http://localhost:8080/api/auth/logout
+Request: { "token": "<jwt>" }
+Response: { "message": "Logged out successfully" }
+
+POST http://localhost:8080/api/auth/token/  # JWT obtain (project uses SimpleJWT)
+Request: { "email": "string", "password": "string" }
+Response: { "access": "<token>", "refresh": "<token>" }
+
+POST http://localhost:8080/api/auth/token/refresh/
+Request: { "refresh": "<refresh_token>" }
+Response: { "access": "<new_access_token>" }
+
+--- User Endpoints ---
+
+GET http://localhost:8080/api/users/profile
+Headers: Authorization: Bearer <token>
+Response: User object
+
+PUT http://localhost:8080/api/users/profile
+Headers: Authorization: Bearer <token>
+Request: { "name": "string", "email": "string" }
+Response: Updated User object
+
+GET http://localhost:8080/api/users/orders
+Headers: Authorization: Bearer <token>
+Response: [ Order, ... ]
+
+--- Product Endpoints ---
+
+GET http://localhost:8080/api/products
+Query params: page, limit, search, category, tags (comma separated), minPrice, maxPrice, minRating, ordering
+Response: { "products": [Product,...], "pagination": {"page","limit","total"} }
+
+GET http://localhost:8080/api/products/:id
+Response: Product object
+
+POST http://localhost:8080/api/products  (Admin only)
+Headers: Authorization: Bearer <token>
+Request: Product data (name, description, price, image, category (id), tag_ids: [ids], in_stock, quantity)
+Response: Created Product object
+
+PUT http://localhost:8080/api/products/:id  (Admin only)
+Headers: Authorization: Bearer <token>
+Request: Product data
+Response: Updated Product object
+
+DELETE http://localhost:8080/api/products/:id  (Admin only)
+Headers: Authorization: Bearer <token>
+Response: { "message": "Product deleted successfully" }
+
+--- Category Endpoints ---
+
+GET http://localhost:8080/api/categories
+Response: [ Category, ... ]
+
+POST http://localhost:8080/api/categories  (Admin only)
+Headers: Authorization: Bearer <token>
+Request: { "name": "string", "description": "string" }
+Response: Created Category object
+
+--- Tag Endpoints ---
+
+GET http://localhost:8080/api/tags
+Response: [ Tag, ... ]
+
+--- Cart Endpoints ---
+
+GET http://localhost:8080/api/cart
+Headers: Authorization: Bearer <token>
+Response: [ CartItem, ... ]
+
+POST http://localhost:8080/api/cart
+Headers: Authorization: Bearer <token>
+Request: { "product": productId, "quantity": number }
+Response: Added CartItem object
+
+PUT http://localhost:8080/api/cart/:id
+Headers: Authorization: Bearer <token>
+Request: { "quantity": number }
+Response: Updated CartItem object
+
+DELETE http://localhost:8080/api/cart/:id
+Headers: Authorization: Bearer <token>
+Response: { "message": "Item removed from cart" }
+
+DELETE http://localhost:8080/api/cart
+Headers: Authorization: Bearer <token>
+Response: { "message": "Cart cleared" }
+
+--- Order Endpoints ---
+
+GET http://localhost:8080/api/orders
+Headers: Authorization: Bearer <token>
+Query params: status
+Response: [ Order, ... ]
+
+GET http://localhost:8080/api/orders/:id
+Headers: Authorization: Bearer <token>
+Response: Order object with items
+
+POST http://localhost:8080/api/orders
+Headers: Authorization: Bearer <token>
+Request: { "name","email","phone","address","note","items": [{"product": productId, "quantity": number}] }
+Response: Created Order object
+
+PUT http://localhost:8080/api/orders/:id/cancel
+Headers: Authorization: Bearer <token>
+Response: Updated Order object (status=cancelled)
+
+--- Review Endpoints ---
+
+GET http://localhost:8080/api/products/:id/reviews
+Query params: page, limit
+Response: { "reviews": [Review,...], "pagination": {...} }
+
+POST http://localhost:8080/api/products/:id/reviews
+Headers: Authorization: Bearer <token>
+Request: { "rating": number, "comment": "string" }
+Response: Created Review object
+
+PUT http://localhost:8080/api/reviews/:id
+Headers: Authorization: Bearer <token>
+Request: { "rating", "comment" }
+Response: Updated Review object
+
+DELETE http://localhost:8080/api/reviews/:id
+Headers: Authorization: Bearer <token>
+Response: { "message": "Review deleted" }
+
+--- Notes ---
+- Authentication uses JWT (SimpleJWT). Use the token from /api/auth/token/ or /api/auth/register (if implemented) in Authorization header.
+- Replace :id with the numeric resource id.
+- Paths correspond to router registrations under /api/ in the Django project.
